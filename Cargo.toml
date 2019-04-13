@@ -1,0 +1,39 @@
+[package]
+name = "stage0"
+version = "0.1.0"
+authors = ["Liam Curry <liam@sagan.software>"]
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+wasm-bindgen = "0.2"
+js-sys = "0.3"
+
+[dependencies.web-sys]
+version = "0.3"
+features = [
+    'Attr',
+    'console',
+    'Document',
+    'DocumentFragment',
+    'Element',
+    'Event',
+    'EventTarget',
+    'HtmlElement',
+    'HtmlTemplateElement',
+    'NodeFilter',
+    'NamedNodeMap',
+    'Node',
+    'Text',
+    'TreeWalker',
+    'Window',
+]
+
+[dev-dependencies]
+wasm-bindgen-test = "0.2"
+
+# [[bench]]
+# name = "benchmarks"
+# harness = false
