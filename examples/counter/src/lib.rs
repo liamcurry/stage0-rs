@@ -1,3 +1,6 @@
+use stage0::h;
+use std::cell::RefCell;
+use std::rc::Rc;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 
@@ -9,30 +12,59 @@ const VIEW: &str = "
 </div>
 ";
 
+struct State {
+    count: i32,
+}
+
 #[wasm_bindgen]
 pub fn main() -> Result<(), JsValue> {
-    let document = web_sys::window()
+    let root = h(VIEW)?;
+    let mut refs = root.collect()?;
+
+    let state = Rc::new(RefCell::new(State { count: 0 }));
+
+    let count = Rc::new(refs.remove("count").unwrap());
+
+    let update = {
+        let state = state.clone();
+        let count = count.clone();
+        let func = move || count.set_node_value(Some(&state.borrow().count.to_string()));
+        Rc::new(func)
+    };
+    update();
+
+    let down = refs.remove("down").unwrap();
+    let down_onclick = {
+        let state = state.clone();
+        let update = update.clone();
+        Closure::wrap(Box::new(move || {
+            state.borrow_mut().count -= 1;
+            update();
+        }) as Box<dyn FnMut()>)
+    };
+    down.unchecked_ref::<web_sys::HtmlElement>()
+        .set_onclick(Some(down_onclick.as_ref().unchecked_ref()));
+    down_onclick.forget();
+
+    let up = refs.remove("up").unwrap();
+    let up_onclick = {
+        let state = state.clone();
+        let update = update.clone();
+        Closure::wrap(Box::new(move || {
+            state.borrow_mut().count += 1;
+            update();
+        }) as Box<dyn FnMut()>)
+    };
+    up.unchecked_ref::<web_sys::HtmlElement>()
+        .set_onclick(Some(up_onclick.as_ref().unchecked_ref()));
+    up_onclick.forget();
+
+    web_sys::window()
         .expect("no window")
         .document()
-        .expect("no document");
-    let body = document.body().expect("no body");
-    let compiler_template = document
-        .create_element("template")
-        .unwrap()
-        .unchecked_into::<web_sys::HtmlTemplateElement>();
-    let tree_walker = document.create_tree_walker(&document).unwrap();
-
-    let root = stage0::compile_str(&compiler_template, &tree_walker, VIEW)?;
-    let refs = root.collect(&tree_walker)?;
-
-    let mut state = 0;
-
-    // let count = refs.get("count").unwrap();
-
-    // let down = refs.get("down").unwrap();
-    // let up = refs.get("up").unwrap();
-
-    web_sys::console::log_1(&root.node);
-    body.append_child(&root.node)?;
-    Ok(())
+        .expect("no document")
+        .body()
+        .expect("no body")
+        .append_child(root.as_ref())
+        .map(|_| ())
 }
