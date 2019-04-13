@@ -1,10 +1,7 @@
-use js_sys::{Array, Object, Reflect};
 use std::collections::HashMap;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
-use web_sys::{
-    console, Document, Element, Event, HtmlElement, HtmlTemplateElement, Node, TreeWalker,
-};
+use web_sys::{Element, HtmlTemplateElement, Node, TreeWalker};
 
 pub fn collector(node: &Node) -> Result<Option<String>, JsValue> {
     if node.node_type() != Node::TEXT_NODE {
