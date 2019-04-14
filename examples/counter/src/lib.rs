@@ -1,4 +1,6 @@
+use js_sys::Reflect;
 use stage0::h;
+use stage0::synthetic_events::setup_synthetic_event;
 use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::prelude::*;
@@ -21,6 +23,8 @@ pub fn main() -> Result<(), JsValue> {
     let root = h(VIEW)?;
     let mut refs = root.collect()?;
 
+    setup_synthetic_event("click");
+
     let state = Rc::new(RefCell::new(State { count: 0 }));
 
     let count = Rc::new(refs.remove("count").unwrap());
@@ -42,8 +46,12 @@ pub fn main() -> Result<(), JsValue> {
             update();
         }) as Box<dyn FnMut()>)
     };
-    down.unchecked_ref::<web_sys::HtmlElement>()
-        .set_onclick(Some(down_onclick.as_ref().unchecked_ref()));
+    Reflect::set(
+        &down,
+        &JsValue::from("__click"),
+        down_onclick.as_ref().unchecked_ref::<js_sys::Function>(),
+    )
+    .unwrap();
     down_onclick.forget();
 
     let up = refs.remove("up").unwrap();
@@ -55,8 +63,12 @@ pub fn main() -> Result<(), JsValue> {
             update();
         }) as Box<dyn FnMut()>)
     };
-    up.unchecked_ref::<web_sys::HtmlElement>()
-        .set_onclick(Some(up_onclick.as_ref().unchecked_ref()));
+    Reflect::set(
+        &up,
+        &JsValue::from("__click"),
+        up_onclick.as_ref().unchecked_ref::<js_sys::Function>(),
+    )
+    .unwrap();
     up_onclick.forget();
 
     web_sys::window()

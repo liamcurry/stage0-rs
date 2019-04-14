@@ -1,3 +1,6 @@
+pub mod reconcile;
+pub mod synthetic_events;
+
 use lazy_static::lazy_static;
 use std::collections::HashMap;
 use wasm_bindgen::prelude::*;
@@ -116,8 +119,14 @@ impl Template {
     }
 }
 
-impl AsRef<web_sys::Node> for Template {
-    fn as_ref(&self) -> &web_sys::Node {
+impl Into<Node> for Template {
+    fn into(self) -> Node {
+        self.node
+    }
+}
+
+impl AsRef<Node> for Template {
+    fn as_ref(&self) -> &Node {
         &self.node
     }
 }
@@ -144,6 +153,7 @@ lazy_static! {
 }
 
 pub fn h(value: &str) -> Result<Template, JsValue> {
+    // TODO use String.raw ?
     COMPILER_TEMPLATE.0.set_inner_html(value.trim());
     let content = COMPILER_TEMPLATE
         .0

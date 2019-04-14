@@ -4,7 +4,7 @@ const CleanWebpackPlugin = require("clean-webpack-plugin");
 const WasmPackPlugin = require("@wasm-tool/wasm-pack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
-module.exports = ["counter"].map(pkg => {
+module.exports = ["todomvc"].map(pkg => {
     const crateDirectory = path.resolve(__dirname, "examples", pkg);
     const outPath = path.resolve(__dirname, "gh-pages", pkg);
     return {
